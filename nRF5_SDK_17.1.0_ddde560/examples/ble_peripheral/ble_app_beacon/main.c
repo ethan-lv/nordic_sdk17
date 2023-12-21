@@ -187,14 +187,20 @@ static void advertising_init(void)
     // Initialize advertising parameters (used when starting advertising).
     memset(&m_adv_params, 0, sizeof(m_adv_params));
 
-    m_adv_params.properties.type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
+    m_adv_params.properties.type = BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED;
     m_adv_params.p_peer_addr     = NULL;    // Undirected advertisement.
     m_adv_params.filter_policy   = BLE_GAP_ADV_FP_ANY;
     m_adv_params.interval        = NON_CONNECTABLE_ADV_INTERVAL;
     m_adv_params.duration        = 0;       // Never time out.
 
-    err_code = ble_advdata_encode(&advdata, m_adv_data.adv_data.p_data, &m_adv_data.adv_data.len);
-    APP_ERROR_CHECK(err_code);
+    // err_code = ble_advdata_encode(&advdata, m_adv_data.adv_data.p_data, &m_adv_data.adv_data.len);
+    // APP_ERROR_CHECK(err_code);
+
+    uint8_t array[] = {0x02,0x01,0x06,0x03,0x09,'L','V'};
+
+    memcpy(m_adv_data.adv_data.p_data,array,sizeof(array));
+
+    m_adv_data.scan_rsp_data.len = 0;
 
     err_code = sd_ble_gap_adv_set_configure(&m_adv_handle, &m_adv_data, &m_adv_params);
     APP_ERROR_CHECK(err_code);
