@@ -88,19 +88,19 @@
 
 static ble_gap_adv_params_t m_adv_params;                                  /**< Parameters to be passed to the stack when starting advertising. */
 static uint8_t              m_adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET; /**< Advertising handle used to identify an advertising set. */
-static uint8_t              m_enc_advdata[BLE_GAP_ADV_SET_DATA_SIZE_MAX];  /**< Buffer for storing an encoded advertising set. */
-
+static uint8_t              m_enc_advdata[31];  /**< Buffer for storing an encoded advertising set. */
+static uint8_t              m_enc_scandata[31];
 /**@brief Struct that contains pointers to the encoded advertising data. */
 static ble_gap_adv_data_t m_adv_data =
 {
     .adv_data =
     {
         .p_data = m_enc_advdata,
-        .len    = BLE_GAP_ADV_SET_DATA_SIZE_MAX
+        .len    = 0
     },
     .scan_rsp_data =
     {
-        .p_data = NULL,
+        .p_data = m_enc_scandata,
         .len    = 0
 
     }
@@ -187,20 +187,19 @@ static void advertising_init(void)
     // Initialize advertising parameters (used when starting advertising).
     memset(&m_adv_params, 0, sizeof(m_adv_params));
 
-    m_adv_params.properties.type = BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED;
-    m_adv_params.p_peer_addr     = NULL;    // Undirected advertisement.
+    m_adv_params.properties.type = BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_UNDIRECTED;
     m_adv_params.filter_policy   = BLE_GAP_ADV_FP_ANY;
     m_adv_params.interval        = NON_CONNECTABLE_ADV_INTERVAL;
     m_adv_params.duration        = 0;       // Never time out.
 
-    // err_code = ble_advdata_encode(&advdata, m_adv_data.adv_data.p_data, &m_adv_data.adv_data.len);
-    // APP_ERROR_CHECK(err_code);
 
-    uint8_t array[] = {0x02,0x01,0x06,0x03,0x09,'L','V'};
+    uint8_t adv_array[] = {0x2,0xff,0};
+    memcpy(m_adv_data.adv_data.p_data,adv_array,sizeof(adv_array));
+    m_adv_data.adv_data.len = sizeof(adv_array);
 
-    memcpy(m_adv_data.adv_data.p_data,array,sizeof(array));
-
-    m_adv_data.scan_rsp_data.len = 0;
+    // uint8_t scan_array[] = {0x03,0x09,'L','V'};
+    // memcpy(m_adv_data.scan_rsp_data.p_data,scan_array,sizeof(scan_array));
+    // m_adv_data.scan_rsp_data.len = sizeof(scan_array);
 
     err_code = sd_ble_gap_adv_set_configure(&m_adv_handle, &m_adv_data, &m_adv_params);
     APP_ERROR_CHECK(err_code);
